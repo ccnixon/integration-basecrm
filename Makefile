@@ -3,12 +3,12 @@ TESTS = $(wildcard test/*.js)
 SRC = $(wildcard lib/*.js)
 GREP ?=.
 
-build: node_modules test-style test-cov
+build: node_modules
 
-node_modules: clean
+node_modules: package.json
 	@npm install 
 
-test: test-style
+test:
 	@TZ=UTC ./node_modules/.bin/mocha $(TESTS) \
 		--timeout 20000 \
 		--require should \
@@ -31,4 +31,4 @@ test-style:
 clean:
 	rm -rf coverage node_modules *.log
 
-.PHONY: test test-cov test-style
+.PHONY: test test-cov test-style build
