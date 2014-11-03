@@ -1,0 +1,11 @@
+{
+  "input": {
+    "type": "page",
+    "userId": "user-id",
+    "name": "Webhooks",
+    "category": "Docs",
+    "timestamp": "2014",
+    "properties": {}
+  },
+  "output": {}
+}

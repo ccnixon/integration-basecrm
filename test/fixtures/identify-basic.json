@@ -1,0 +1,17 @@
+{
+  "input": {
+    "type": "identify",
+    "userId": "user-id",
+    "traits": {
+      "avatar": "avatar.jpg",
+      "country": "some-country",
+      "name": "John Doe",
+      "gender": "male",
+      "email": "jd@example.com",
+      "phone": "55555",
+      "city": "some-city",
+      "age": "age"
+    }
+  },
+  "output": {}
+}

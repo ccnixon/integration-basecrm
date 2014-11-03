@@ -1,0 +1,13 @@
+{
+  "input": {
+    "type": "group",
+    "userId": "user-id",
+    "groupId": "group-id",
+    "traits": {
+      "avatar": "segment.jpg",
+      "name": "Segment",
+      "email": "friends@segment.io"
+    }
+  },
+  "output": {}
+}
