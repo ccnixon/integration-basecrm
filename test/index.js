@@ -5,7 +5,7 @@ var express = require('express');
 var Webhooks = require('..');
 
 describe('Webhooks', function(){
-  var types = ['track', 'identify', 'alias', 'group', 'page'];
+  var types = ['track', 'identify', 'alias', 'group', 'page', 'screen'];
   var webhooks;
   var settings;
   var server;
