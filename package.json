@@ -13,7 +13,7 @@
     "test": "make test"
   },
   "dependencies": {
-    "segmentio-integration": "3.x",
+    "segmentio-integration": "^3.0.3",
     "segmentio-transform-legacy": "^2.0.2"
   },
   "devDependencies": {
