@@ -1,4 +1,10 @@
 
+1.1.7 / 2014-12-10
+==================
+
+ * Prevent double callbacks
+ * Bump request timeout
+
 1.1.6 / 2014-12-08
 ==================
 
