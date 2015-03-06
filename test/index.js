@@ -5,117 +5,109 @@ var Webhooks = require('..');
 var assert = require('assert');
 var express = require('express');
 
-// Available API versions
-['1', '2'].forEach(function(version){
-  describe('Webhooks v' + version, function(){
-    var types = ['track', 'identify', 'alias', 'group', 'page', 'screen'];
-    var webhooks;
-    var settings;
-    var server;
-    var test;
-    var app;
+describe('Webhooks', function(){
+  var types = ['track', 'identify', 'alias', 'group', 'page', 'screen'];
+  var webhooks;
+  var settings;
+  var server;
+  var test;
+  var app;
 
-    before(function(done){
-      app = express();
-      app.use(express.bodyParser());
-      server = app.listen(4000, done);
+  before(function(done){
+    app = express();
+    app.use(express.bodyParser());
+    server = app.listen(4000, done);
+  });
+
+  after(function(done){
+    server.close(done);
+  });
+
+  beforeEach(function(){
+    settings = {
+      globalHook: 'http://localhost:4000',
+    };
+    webhooks = new Webhooks(settings);
+    test = Test(webhooks, __dirname);
+  });
+
+  it('should have the correct settings', function(){
+    test
+    .name('Webhooks')
+    .channels(['server', 'mobile', 'client'])
+    .timeout('3s')
+    .retries(1);
+  });
+
+  describe('.validate()', function(){
+    it('should be invalid if .globalHook isnt a url', function(){
+      test.invalid({}, { globalHook: true });
+      test.invalid({}, { globalHook: '' });
+      test.invalid({}, { globalHook: 'aaa' });
     });
 
-    after(function(done){
-      server.close(done);
+    it('should be valid if globalHook is a url', function(){
+      test.valid({}, settings);
     });
+  });
 
-    beforeEach(function(){
-      settings = {
-        globalHook: 'http://localhost:4000',
-        version: version
-      };
-      webhooks = new Webhooks(settings);
-      test = Test(webhooks, __dirname);
-    });
+  types.forEach(function(type){
+    describe('#' + type, function(){
+      var json;
 
-    it('should have the correct settings', function(){
-      test
-      .name('Webhooks')
-      .channels(['server', 'mobile', 'client'])
-      .timeout('3s')
-      .retries(1);
-    });
-
-    describe('.validate()', function(){
-      it('should be invalid if .globalHook isnt a url', function(){
-        test.invalid({}, { globalHook: true, version: version });
-        test.invalid({}, { globalHook: '', version: version });
-        test.invalid({}, { globalHook: 'aaa', version: version });
+      beforeEach(function(){
+        json = test.fixture(type + '-basic');
       });
 
-      it('should be valid if globalHook is a url', function(){
-        test.valid({}, settings);
+      it('should succeed on valid call', function(done){
+        var route = '/' + type + '/success';
+        settings.globalHook += route;
+
+        app.post(route, function(req, res){
+          assert.deepEqual(req.body, json.output);
+          res.send(200);
+        });
+
+        test
+        .set(settings)
+        [type](json.input)
+        .expects(200)
+        .end(done);
       });
 
-      it('should be invalid if .version is omitted', function(){
-        test.invalid({}, { globalHook: 'http://test.com' });
+      it('should error on invalid calls', function(done){
+        var route = '/' + type + '/error';
+        settings.globalHook += route;
+
+        app.post(route, function(req, res){
+          assert.deepEqual(req.body, json.output);
+          res.send(503);
+        });
+
+        test
+          .set(settings)
+          [type](json.input)
+          .expects(503)
+          .error(done);
       });
-    });
 
-    types.forEach(function(type){
-      describe('#' + type, function(){
-        var json;
+      it('should ignore bad reply', function(done){
+        var route = '/bad';
+        settings.globalHook += route;
 
-        beforeEach(function(){
-          json = test.fixture(type + '-basic-v' + version);
+        app.post(route, function(req, res){
+          res.set('Content-Type', 'application/json');
+          res.send(200, 'I lied, this is not JSON');
         });
 
-        it('should succeed on valid call', function(done){
-          var route = '/' + type + '/success';
-          settings.globalHook += route;
-
-          app.post(route, function(req, res){
-            assert.deepEqual(req.body, json.output);
-            res.send(200);
-          });
-
-          test
-            .set(settings)
-            [type](json.input)
-            .expects(200)
-            .end(done);
-        });
-
-        it('should error on invalid calls', function(done){
-          var route = '/' + type + '/error';
-          settings.globalHook += route;
-
-          app.post(route, function(req, res){
-            assert.deepEqual(req.body, json.output);
-            res.send(503);
-          });
-
-          test
-            .set(settings)
-            [type](json.input)
-            .expects(503)
-            .error(done);
-        });
-
-        it('should ignore bad reply', function(done){
-          var route = '/bad';
-          settings.globalHook += route;
-
-          app.post(route, function(req, res){
-            res.set('Content-Type', 'application/json');
-            res.send(200, 'I lied, this is not JSON');
-          });
-
-          test
-            .set(settings)
-            .identify(json.input)
-            .expects(200)
-            .end(done);
-        });
-
-        // TODO: test limit
+        test
+          .set(settings)
+          .identify(json.input)
+          .expects(200)
+          .end(done);
       });
+
+      // TODO: test limit
     });
   });
 });
