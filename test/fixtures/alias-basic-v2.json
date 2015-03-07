@@ -12,7 +12,7 @@
     "type": "alias",
     "previousId": "prev-id",
     "userId": "user-id",
-    "timestamp": {},
+    "timestamp": "2014-01-01T00:00:00.000Z",
     "context": {
       "ip": "10.0.0.1"
     }
