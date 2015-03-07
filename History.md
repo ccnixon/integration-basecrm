@@ -1,4 +1,10 @@
 
+1.2.0 / 2015-03-07
+==================
+
+  * Add API versioning support
+  * Update circle template
+
 1.1.10 / 2015-01-27
 ==================
 
