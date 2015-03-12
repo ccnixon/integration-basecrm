@@ -98,6 +98,22 @@ var express = require('express');
             .error(done);
         });
 
+        it('should ignore bad reply', function(done){
+          var route = '/bad';
+          settings.globalHook += route;
+
+          app.post(route, function(req, res){
+            res.set('Content-Type', 'application/json');
+            res.send(200, 'I lied, this is not JSON');
+          });
+
+          test
+            .set(settings)
+            .identify(json.input)
+            .expects(200)
+            .end(done);
+        });
+
         // TODO: test limit
       });
     });
