@@ -3,6 +3,7 @@
 var Test = require('segmentio-integration-tester');
 var Webhooks = require('..');
 var assert = require('assert');
+var crypto = require('crypto');
 var express = require('express');
 
 describe('Webhooks', function(){
@@ -98,6 +99,31 @@ describe('Webhooks', function(){
         app.post(route, function(req, res){
           res.set('Content-Type', 'application/json');
           res.send(200, 'I lied, this is not JSON');
+        });
+
+        test
+          .set(settings)
+          .identify(json.input)
+          .expects(200)
+          .end(done);
+      });
+
+      it('should attach an HMAC digest when options.sharedSecret is present', function(done){
+        var route = '/' + type;
+        settings.globalHook += route;
+        settings.sharedSecret = 'teehee';
+
+        app.post(route, function(req, res){
+          var signature = req.headers['x-signature'];
+          var digest = crypto
+            .createHmac('sha1', settings.sharedSecret)
+            .update(JSON.stringify(req.body))
+            .digest('hex');
+
+          assert(signature);
+          assert(signature === digest);
+
+          res.send(200);
         });
 
         test
