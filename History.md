@@ -1,4 +1,9 @@
 
+2.0.2 / 2015-09-16
+==================
+
+  * Convert body text to UTF-8 before encrypting for signature
+
 2.0.1 / 2015-09-09
 ==================
 
