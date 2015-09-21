@@ -70,10 +70,10 @@ describe('Webhooks', function(){
         });
 
         test
-        .set(settings)
-        [type](json.input)
-        .expects(200)
-        .end(done);
+          .set(settings)
+          [type](json.input)
+          .expects(200)
+          .end(done);
       });
 
       it('should error on invalid calls', function(done){
@@ -103,7 +103,7 @@ describe('Webhooks', function(){
 
         test
           .set(settings)
-          .identify(json.input)
+          [type](json.input)
           .expects(200)
           .end(done);
       });
@@ -128,7 +128,7 @@ describe('Webhooks', function(){
 
         test
           .set(settings)
-          .identify(json.input)
+          [type](json.input)
           .expects(200)
           .end(done);
       });
