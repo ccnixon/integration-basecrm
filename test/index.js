@@ -26,7 +26,8 @@ describe('Webhooks', function(){
 
   beforeEach(function(){
     settings = {
-      globalHook: 'http://localhost:4000',
+      hooks: ['http://localhost:4000'],
+      globalHook: 'http://localhost:4000'
     };
     webhooks = new Webhooks(settings);
     test = Test(webhooks, __dirname);
@@ -40,18 +41,6 @@ describe('Webhooks', function(){
     .retries(1);
   });
 
-  describe('.validate()', function(){
-    it('should be invalid if .globalHook isnt a url', function(){
-      test.invalid({}, { globalHook: true });
-      test.invalid({}, { globalHook: '' });
-      test.invalid({}, { globalHook: 'aaa' });
-    });
-
-    it('should be valid if globalHook is a url', function(){
-      test.valid({}, settings);
-    });
-  });
-
   types.forEach(function(type){
     describe('#' + type, function(){
       var json;
@@ -62,6 +51,94 @@ describe('Webhooks', function(){
 
       it('should succeed on valid call', function(done){
         var route = '/' + type + '/success';
+        settings.hooks = settings.hooks.map(function(hook){
+           return hook + route;
+        });
+
+        app.post(route, function(req, res){
+          assert.deepEqual(req.body, json.output);
+          res.send(200);
+        });
+
+        test
+          .set(settings)
+          [type](json.input)
+          .expects(200)
+          .end(done);
+      });
+
+      it('should send to multiple webhooks', function(done){
+        var path1 = '/' + type + '/success';
+        var path2 = '/' + type + '/error';
+
+        var route1 = 'http://localhost:4000' + path1;
+        var route2 = 'http://localhost:4000' + path2;
+
+        // route1 is explicitly twice to test when there is a bad webhook.
+        settings.hooks = [route1, route2, route1];
+
+        app.post(path1, function(req, res){
+          assert.deepEqual(req.body, json.output);
+          res.send(200);
+        });
+        app.post(path2, function(req, res){
+          assert.deepEqual(req.body, json.output);
+          res.send(503);
+        });
+
+        test
+          .set(settings)
+          .requests(3)
+          [type](json.input);
+
+        test
+          .request(0)
+          .expects(200);
+
+        test
+          .request(1)
+          .expects(503);
+
+        test
+          .request(2)
+          .expects(200);
+
+        test.end(done);
+      });
+
+      it('should fail when all webhooks are down', function(done){
+        var path1 = '/' + type + '/down'; // not mounted
+        var path2 = '/' + type + '/error';
+
+        var route1 = 'http://localhost:4000' + path1;
+        var route2 = 'http://localhost:4000' + path2;
+
+        settings.hooks = [route1, route2];
+
+        app.post(path2, function(req, res){
+          assert.deepEqual(req.body, json.output);
+          res.send(503);
+        });
+
+        test
+          .set(settings)
+          .requests(2)
+          [type](json.input);
+
+        test
+          .request(0)
+          .expects(404);
+
+        test
+          .request(1)
+          .expects(503);
+
+        test.error(done);
+      });
+
+      it('should use globalHook when no hooks are present', function(done){
+        var route = '/' + type + '/success';
+        settings.hooks = [];
         settings.globalHook += route;
 
         app.post(route, function(req, res){
@@ -78,7 +155,9 @@ describe('Webhooks', function(){
 
       it('should error on invalid calls', function(done){
         var route = '/' + type + '/error';
-        settings.globalHook += route;
+        settings.hooks = settings.hooks.map(function(hook){
+           return hook + route;
+        });
 
         app.post(route, function(req, res){
           assert.deepEqual(req.body, json.output);
@@ -94,7 +173,9 @@ describe('Webhooks', function(){
 
       it('should ignore bad reply', function(done){
         var route = '/bad';
-        settings.globalHook += route;
+        settings.hooks = settings.hooks.map(function(hook){
+           return hook + route;
+        });
 
         app.post(route, function(req, res){
           res.set('Content-Type', 'application/json');
@@ -110,7 +191,9 @@ describe('Webhooks', function(){
 
       it('should attach an HMAC digest when options.sharedSecret is present', function(done){
         var route = '/' + type;
-        settings.globalHook += route;
+        settings.hooks = settings.hooks.map(function(hook){
+           return hook + route;
+        });
         settings.sharedSecret = 'teehee';
 
         app.post(route, function(req, res){
