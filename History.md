@@ -1,4 +1,9 @@
 
+2.0.4 / 2015-09-28
+==================
+
+  * Remove global hook option now that migration is run, limit to 5 webhooks
+
 2.0.3 / 2015-09-24
 ==================
 
