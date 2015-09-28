@@ -26,8 +26,7 @@ describe('Webhooks', function(){
 
   beforeEach(function(){
     settings = {
-      hooks: ['http://localhost:4000'],
-      globalHook: 'http://localhost:4000'
+      hooks: ['http://localhost:4000']
     };
     webhooks = new Webhooks(settings);
     test = Test(webhooks, __dirname);
@@ -106,6 +105,25 @@ describe('Webhooks', function(){
         test.end(done);
       });
 
+      it('should only send to 5 webhooks', function(done){
+        var path = '/' + type + '/success';
+        var route = 'http://localhost:4000' + path;
+
+        settings.hooks = [route, route, route, route, route, route, route];
+
+        app.post(path, function(req, res){
+          assert.deepEqual(req.body, json.output);
+          res.send(200);
+        });
+
+        test
+          .set(settings)
+          .requests(5)
+          [type](json.input);
+
+        test.end(done);
+      });
+
       it('should fail when all webhooks are down', function(done){
         var path1 = '/' + type + '/down'; // not mounted
         var path2 = '/' + type + '/error';
@@ -134,23 +152,6 @@ describe('Webhooks', function(){
           .expects(503);
 
         test.error(done);
-      });
-
-      it('should use globalHook when no hooks are present', function(done){
-        var route = '/' + type + '/success';
-        settings.hooks = [];
-        settings.globalHook += route;
-
-        app.post(route, function(req, res){
-          assert.deepEqual(req.body, json.output);
-          res.send(200);
-        });
-
-        test
-          .set(settings)
-          [type](json.input)
-          .expects(200)
-          .end(done);
       });
 
       it('should error on invalid calls', function(done){
