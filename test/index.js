@@ -30,6 +30,7 @@ describe('Webhooks', function(){
       hooks: ['http://localhost:4000']
     };
     webhooks = new Webhooks(settings);
+    Webhooks._reset();
     test = Test(webhooks, __dirname);
   });
 
