@@ -13,8 +13,10 @@
     "test": "make test"
   },
   "dependencies": {
-    "segmentio-integration": "^3.0.5",
-    "batch": "^0.5.2"
+    "batch": "^0.5.2",
+    "lru-cache": "^4.0.0",
+    "ms": "^0.7.1",
+    "segmentio-integration": "^3.0.5"
   },
   "devDependencies": {
     "express": "~3.2.6",

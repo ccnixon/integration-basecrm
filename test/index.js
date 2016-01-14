@@ -5,6 +5,7 @@ var Webhooks = require('..');
 var assert = require('assert');
 var crypto = require('crypto');
 var express = require('express');
+var Batch = require('batch');
 
 describe('Webhooks', function(){
   var types = ['track', 'identify', 'alias', 'group', 'page', 'screen'];
@@ -217,7 +218,31 @@ describe('Webhooks', function(){
           .end(done);
       });
 
-      // TODO: test limit
+      it('should rate limit bad urls', function(done) {
+        var success = settings.hooks[0];
+        var failed = 'http://localhost:7643'
+        settings.hooks.push(failed);
+        app.post('/', function(req, res) { res.send(200 )});
+
+        var batch = new Batch()
+          .concurrency(1);
+        for (var i = 0; i < 50; i++) {
+          batch.push(function(done){
+            test
+              .set(settings)
+              [type](json.input)
+              .end(done);
+          });
+        }
+
+        batch.end(function(err, results){
+          // it should not limit the successful endpoint
+          assert(webhooks.allowed(success))
+          // it should imit the failed endpoint
+          assert(!webhooks.allowed(failed));
+          done();
+        });
+      });
     });
   });
 });
