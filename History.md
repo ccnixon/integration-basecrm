@@ -1,4 +1,11 @@
 
+2.0.8 / 2016-02-23
+==================
+
+  * request: dont throw when hooks is a string
+  * add docker, refactor circle
+
+
 2.0.7 / 2016-01-14
 ==================
 
