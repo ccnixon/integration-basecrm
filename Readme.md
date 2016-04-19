@@ -1,8 +1,6 @@
-[![Build Status](https://circleci.com/gh/segmentio/integration-webhooks/tree/master.png?style=svg)](https://circleci.com/gh/segmentio/integration-webhooks/tree/master)
+# integration-basecrm
 
-# integration-webhooks
-
-Webhooks server-side integration for Segment.
+BaseCRM server-side integration for Segment.
 
 ## License
 
